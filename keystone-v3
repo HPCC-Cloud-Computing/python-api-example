@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+
 import requests
 import json
 
 print "@author TxGVNN"
 
-# payload = {'auth' : {'identity': {'methods': ['password'], 'password': {'user': {'id':'admin','password':'admin'}}}}}
+# version 2
+# payload = {'auth' : {'identity': {'methods': ['password'], 'password': {'user': {'id':'admin','password':'admin'}}}}} 
+
+# version 3
 payload = {"auth":{"identity":{"methods":["password"],"password":{"user":{"domain":{"id":"default"},"name":"admin","password":"admin"}}}}}
 
 

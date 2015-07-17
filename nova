@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-import requests, sys, json
+import requests, sys, json, getopt
 
 
+endpoint_keystone = 'http://127.0.0.1:5000/v2.0/'
+endpoint_nova = 'http://127.0.0.1:8774/v2/612427e5408e41a0a35604fe8a3e5370'
 # KEYSTONE
 def get_tokens(auth):
+	'api connect'
 	print 'User ' + auth['auth']['passwordCredentials']['username']
 	print "wait request tokens..."
-	r = requests.post('http://127.0.0.1:5000/v2.0/tokens', json = auth)
+	r = requests.post(endpoint_keystone+'/tokens', json = auth)
 	if r.status_code == requests.codes.ok:
 		# print r.json()
 		res = r.json()
@@ -15,13 +18,12 @@ def get_tokens(auth):
 	return False
 
 
-
 # Create instance
 def post_server(tokens, name, flavor, image):
-
+	'api connect'
 	payload = {"server": {"name":name, 'imageRef': image, 'flavorRef':flavor}}
 	headers = {'X-Auth-Token': tokens}
-	r = requests.post('http://127.0.0.1:8774/v2/612427e5408e41a0a35604fe8a3e5370/servers', headers = headers, json=payload)
+	r = requests.post(endpoint_nova+'/servers', headers = headers, json=payload)
 	ret = {'status': r.status_code, 'content': r.text}
 	return ret
 
@@ -29,9 +31,9 @@ def post_server(tokens, name, flavor, image):
 
 # Images
 def get_images(tokens):
-	'Get json list image support'
+	'api connect'
 	headers = {'X-Auth-Token': tokens}
-	r = requests.get('http://127.0.0.1:8774/v2/612427e5408e41a0a35604fe8a3e5370/images/detail', headers = headers)
+	r = requests.get(endpoint_nova+'/images/detail', headers = headers)
 	if r.status_code == 200:
 		return r.json()
 	return False
@@ -39,27 +41,21 @@ def get_images(tokens):
 
 # Flavors
 def get_flavors(tokens):
+	'api connect'
 	headers = {'X-Auth-Token': tokens}
-	r = requests.get('http://127.0.0.1:8774/v2/612427e5408e41a0a35604fe8a3e5370/flavors', headers = headers)
+	r = requests.get(endpoint_nova+'/flavors', headers = headers)
 	if r.status_code == 200:
 		return r.json()
 	return False
 
 # Servers
 def get_servers(tokens):
+	'api connect'
 	headers = {'X-Auth-Token': tokens}
-	r = requests.get('http://127.0.0.1:8774/v2/612427e5408e41a0a35604fe8a3e5370/servers', headers = headers)
+	r = requests.get(endpoint_nova+'/servers', headers = headers)
 	if r.status_code == requests.codes.ok:
 		return r.json();
 	return False;
-
-def get_swifts(tokens):
-	headers = {'X-Auth-Token': tokens}
-	r = requests.get('http://127.0.0.1:8080/v2/AUTH_612427e5408e41a0a35604fe8a3e5370?format=json', headers = headers)
-	if r.status_code == requests.codes.ok:
-		return r.json()
-		
-	return False;		
 
 
 def create_server(auth):
@@ -115,49 +111,53 @@ def list_images(auth):
 	for i in range(len(images['images'])):
 		print str(i) + ': ' +images['images'][i]['name']
 
-def list_containers(auth):
+def list_servers(auth):
 	tokens = get_tokens(auth)
-	containers = get_swifts(tokens)
-	print '\033[32m---------list containers --------------\033[0m'
-	for i in range(len(containers)):
-		print 'name: ' +containers[i]['name'] + "\t\t"+ 'bytes: '+str(containers[i]['bytes'])
+	servers = get_servers(tokens)
+	print '\033[32m---------list servers ---------------\033[0m'
+	for i in range(len(servers['servers'])):
+		print str(i) + ': ' +servers['servers'][i]['name'] +"\t"+servers['servers'][i]['id']
+
+
 def help():
 	print "Script use: list image, list flavor, creat server "
 	print "\t-h, --help\t\tshow this help"
 	print "\t-i, --image\t\tlist image"
 	print "\t-f, --flavor\t\tlist flavor"
 	print "\t-c, --create\t\tcreate server"
-	print "\t-s, --swift\t\tlist containers"
+	print "\t-s, --servers\t\tlist servers"
 	sys.exit()
-
-
-def main(argv):
-	#auth user, password
-	auth = {"auth":{"tenantName":"demo","passwordCredentials":{"username":"demo","password":"demo"}}}
-
-	if argv[0] == "-c":
-		create_server(auth)
-		sys.exit()
-
-	if argv[0] == "-i":
-		list_images(auth)
-		sys.exit()
-
-	if argv[0] == "-f":
-		list_flavors(auth)
-		sys.exit()
-
-	if argv[0] == "-s":
-		list_containers(auth)
-		sys.exit()		
-
-	if argv[0] == "-h":
-		help()
-		sys.exit(2)
-
 
 if __name__ == "__main__":
 	if len(sys.argv) == 1:
 		help()
 		sys.exit()
-	main(sys.argv[1:])
+
+	options , remainder = getopt.getopt(sys.argv[1:], 'cifsh', ['create', 'images','flavors', 'servers', 'help'])
+
+	#auth user, password
+	auth = {"auth":{"tenantName":"demo","passwordCredentials":{"username":"demo","password":"demo"}}}
+
+	for opt, args in options:
+
+		if opt in ('-h', '--help'):
+			help()
+			sys.exit()
+
+		if opt in ('-c', '--create'):
+			create_server(auth)
+			sys.exit()
+
+		if opt in ('-i', '--images'):
+			list_images(auth)
+			sys.exit()
+
+		if opt in ('-f', '--flavors'):
+			list_flavors(auth)
+			sys.exit()
+	
+		if opt in ('-s', '--servers'):
+			list_servers(auth)
+			sys.exit()				
+	
+
