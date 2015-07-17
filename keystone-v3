@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+import requests
+import json
+
+print "@author TxGVNN"
+
+# payload = {'auth' : {'identity': {'methods': ['password'], 'password': {'user': {'id':'admin','password':'admin'}}}}}
+payload = {"auth":{"identity":{"methods":["password"],"password":{"user":{"domain":{"id":"default"},"name":"admin","password":"admin"}}}}}
+
+
+r = requests.post('http://127.0.0.1:5000/v3/auth/tokens', json = payload)
+
+print "-------- payload ----------\n"+str(payload) +"\n"
+print "-------- status_code ----------\n"+str(r.status_code) +"\n"
+print "-------- headers ----------\n" +str(r.headers)+"\n"
+print "-------- json ----------\n" + str(r.text)+"\n"
