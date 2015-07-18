@@ -4,7 +4,7 @@ import requests, sys, getopt, os.path
 
 
 endpoint_keystone = 'http://127.0.0.1:5000/v2.0/'
-endpoind_swift = 'http://127.0.0.1:8080/v1/AUTH_612427e5408e41a0a35604fe8a3e5370'
+endpoint_swift = 'http://127.0.0.1:8080/v1/AUTH_612427e5408e41a0a35604fe8a3e5370'
 
 # KEYSTONE
 def get_tokens(auth):
@@ -82,11 +82,11 @@ def upload_objects(auth):
 	sys.exit()
 
 def help():
-	print "Script use: list image, list flavor, creat server "
-	print "\t-h, --help\t\tshow this help"
+	print "Script use: list containers, list_objects, upload objects"
+	print "\t-h, --help\t\t\tshow this help"
 	print "\t-c, --containers\t\tlist containers"
-	print "\t-o, --objbect {name_container}\t\tlist objbect"
-	print "\t-u, --upload\t\tupload object"
+	print "\t-o, --objbect {name_container}\tlist objbect"
+	print "\t-u, --upload\t\t\tupload object"
 	sys.exit()
 
 if __name__ == "__main__":
